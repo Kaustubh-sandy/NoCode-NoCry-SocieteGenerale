@@ -1,0 +1,3 @@
+def explain(customer, outcome):
+    factors = {"yearly_income": customer.yearly_income, "net_worth_estimate": customer.net_worth_estimate, "credit_score": customer.credit_score, "premium_potential": customer.premium_potential, "investment_readiness": customer.investment_readiness, "activity_score": customer.activity_score}
+    return {"outcome": outcome, "reason_codes": sorted(factors.items(), key=lambda item: item[1], reverse=True), "summary": f"The outcome is supported by a premium-potential score of {customer.premium_potential:.1f}, credit score of {customer.credit_score:.0f}, and estimated net worth of ₹{customer.net_worth_estimate:,.0f}."}
