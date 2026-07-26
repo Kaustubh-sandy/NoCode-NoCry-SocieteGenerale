@@ -1,84 +1,100 @@
-# Bank360 AI: local run guide
+# Bank360 AI: Local Setup & Run Guide
 
-## Work from one backend folder
+Step-by-step instructions to run the AI backend locally on your machine.
 
-Open PowerShell and run:
+---
 
-```powershell
-cd C:\Users\arnav\Downloads\HackGeneral\NoCode-NoCry-SocieteGenerale\AI
-.\setup.ps1                 # only the first time
-.\start.ps1                 # every new backend terminal
-```
+## Prerequisites
 
-After `start.ps1`, `python` means the project-local Python environment. You do not need the long Codex Python path again.
+- Python 3.10+
+- pip
 
-## Run order
+---
 
-### Terminal 1: train the offline data/model artifacts
+## Step 1: Create & Activate Virtual Environment
 
 ```powershell
-python main.py train
+cd AI
+python -m venv .venv
+.venv\Scripts\activate
 ```
 
-Run this first, and rerun it only after you replace or update `Enriched_Customer_financial_profiles.csv`.
+---
 
-It saves these deployment-ready artifacts:
+## Step 2: Install Dependencies
 
-```text
-models/
-  customer_segmentation_kmeans.pkl
-  customer_segmentation_scaler.pkl
-feature_store/
-  customer_features.parquet
-  customer_segments.parquet
-  customer_features.csv          # local fallback when PyArrow is unavailable
-  customer_segments.csv          # local fallback when PyArrow is unavailable
-  segment_personas.json
-  data_quality_report.json
-  metadata.json
+```powershell
+pip install -r requirements.txt
 ```
 
-### Terminal 1: test the agents without the API
+---
+
+## Step 3: Dataset Enrichment Pipeline
+
+Takes the raw `Customer_financial_profiles.csv` (20K rows, 21 columns) and enriches it to **75 columns** using business-rule-based generation (not random values). Every new column is derived from existing customer attributes like income, age, credit score, and debt.
+
+```powershell
+python dataset.py
+```
+
+**Input:** `Customer_financial_profiles.csv`
+**Output:** `Enriched_Customer_financial_profiles.csv`
+
+New columns added include:
+
+| Category           | Examples                                                      |
+| ------------------ | ------------------------------------------------------------- |
+| Banking Profile    | `account_type`, `customer_segment`, `customer_since_years`    |
+| Banking Products   | `has_home_loan`, `has_mutual_funds`, `has_insurance` (9 flags)|
+| Account Balances   | `savings_balance`, `investment_balance`, `loan_outstanding`   |
+| Digital Banking    | `mobile_login_count`, `upi_transactions`, `atm_transactions` |
+| Behaviour          | `average_monthly_spend`, `shopping_ratio`, `cash_dependency`  |
+| Marketing          | `campaign_response`, `offers_received`, `preferred_product`   |
+| AI Scores          | `financial_health_score`, `churn_risk`, `premium_potential_score` |
+
+---
+
+## Step 4: Model Training Pipeline
+
+Preprocesses the enriched dataset, generates feature store metrics, trains the K-Means clustering model, and saves artifacts to `models/` and `feature_store/`.
+
+```powershell
+python model_train.py
+```
+
+---
+
+## Step 5: Start the API Server
+
+Launches the FastAPI multi-agent backend API serving the AI usecases.
+
+> If model artifacts are missing, this automatically triggers Step 4 (training) first.
+
+```powershell
+python start_be.py
+```
+
+- **API Server:** `http://127.0.0.1:8000`
+- **Swagger Docs:** `http://127.0.0.1:8000/docs`
+
+---
+
+## Optional: Direct CLI Queries
 
 ```powershell
 python main.py query "Find premium customers in Bangalore"
-python main.py query "Show income distribution"
-python main.py query "Which customers can become premium?"
 ```
 
-### Terminal 1: start the backend API
+---
+
+## Quick Start (All Steps)
 
 ```powershell
-python main.py serve
+cd AI
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python dataset.py
+python model_train.py
+python start_be.py
 ```
-
-Keep this terminal running. It serves the API at `http://127.0.0.1:8000`. Visit `http://127.0.0.1:8000/docs` to test `/health`, `/train`, and `/query` interactively.
-
-## Frontend connection
-
-Open **Terminal 2** for the frontend. Its commands depend on the existing project setup, but first use:
-
-```powershell
-cd C:\Users\arnav\Downloads\HackGeneral\NoCode-NoCry-SocieteGenerale\UserInterface\banking
-```
-
-Start its existing development command (typically `npm run dev`). The frontend should send requests to:
-
-```text
-POST http://127.0.0.1:8000/query
-Content-Type: application/json
-
-{ "query": "Find premium customers in Bangalore", "limit": 50 }
-```
-
-The backend permits local React/Vite development origins on ports 3000 and 5173.
-
-## Hugging Face deployment
-
-Deploy the `AI` folder as the backend repository. The platform installs `requirements.txt` and starts the same FastAPI app with:
-
-```text
-uvicorn api.main:app --host 0.0.0.0 --port $PORT
-```
-
-The trained `models/` and `feature_store/` files are the runtime assets. For production-sized datasets, store those artifacts in a Hugging Face Dataset repository or object storage and download them during startup rather than committing large files.

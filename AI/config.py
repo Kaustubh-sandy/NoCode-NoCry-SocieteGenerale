@@ -13,3 +13,11 @@ QUALITY_FILE = FEATURE_STORE / "data_quality_report.json"
 PERSONAS_FILE = FEATURE_STORE / "segment_personas.json"
 MODEL_FILE = MODELS_DIR / "customer_segmentation_kmeans.pkl"
 SCALER_FILE = MODELS_DIR / "customer_segmentation_scaler.pkl"
+
+# Enterprise Governance & Policy Configuration (Configurable by Risk & Product Teams)
+GOVERNANCE_POLICY = {
+    "max_auto_campaign_target_count": 1000,
+    "min_cluster_confidence": 0.50,
+    "high_risk_intents": ["credit_limit_change", "account_suspension", "loan_cancellation"],
+    "require_approval_for_prospecting": False
+}
