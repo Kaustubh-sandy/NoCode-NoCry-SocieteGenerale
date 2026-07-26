@@ -3,47 +3,91 @@
 import React from 'react';
 
 export default function ArchitectureView() {
-  const agents = [
-    { name: 'supervisor_agent', role: 'Query Intent Routing', desc: 'Analyzes natural language queries and selects optimal specialist agent tools.' },
-    { name: 'feature_engineering_agent', role: '75-Column Feature Aggregation', desc: 'Extracts spending ratios, channel usage, and financial health scores.' },
-    { name: 'segmentation_agent', role: 'K-Means Persona Clustering', desc: 'Clusters customers into 4 core banking personas based on distance vectors.' },
-    { name: 'persona_agent', role: 'Behavioral Profiling', desc: 'Maps numerical cluster centroids to human banking persona definitions.' },
-    { name: 'explainability_agent', role: 'SHAP Reason Code Engine', desc: 'Calculates mathematical feature impact scores explaining risk drivers.' },
-    { name: 'recommendation_agent', role: 'Next-Best Offer Engine', desc: 'Matches customer profile with tailored product recommendations.' },
-    { name: 'eda_agent', role: 'Exploratory Statistics', desc: 'Calculates mean, median, IQR, skewness, kurtosis, and outlier counts.' },
-    { name: 'visualization_agent', role: 'Visual Charting Spec', desc: 'Formats cross-segment comparison specs for UI charts.' },
-    { name: 'insights_agent', role: 'Portfolio Anomaly Scanner', desc: 'Detects cross-sell gaps and high dormancy clusters across portfolio.' },
-    { name: 'data_agent', role: 'Data Profiling Inspector', desc: 'Monitors raw dataset health score, missing values, and memory footprint.' },
-    { name: 'preprocessing_agent', role: 'Sanity Auditor', desc: 'Audits schema validity and duplicate transaction records.' },
-    { name: 'human_loop_agent', role: 'Risk Governance Auditor', desc: 'Evaluates action volume against bank risk governance thresholds.' },
-    { name: 'report_agent', role: 'Executive Briefing Generator', desc: 'Synthesizes prioritized portfolio health highlights.' },
-  ];
-
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl backdrop-blur-xl space-y-6 animate-fade-in">
-      <div className="border-b border-slate-800 pb-4">
-        <h2 className="text-xl font-bold text-white tracking-wide flex items-center gap-2">
-          🧠 Bank360 Multi-Agent System Architecture
-          <span className="rounded bg-rose-500/10 px-2 py-0.5 text-xs font-semibold text-rose-400 border border-rose-500/20">
-            13 Specialist Agents
+    <div className="space-y-6">
+      
+      {/* Header */}
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl backdrop-blur-xl">
+        <h2 className="text-xl font-bold text-white flex items-center space-x-2">
+          <span>🧠 Bank360 AI Architecture & Multi-Agent Flow</span>
+          <span className="rounded-full bg-rose-500/10 px-2.5 py-0.5 text-xs text-rose-400 font-mono border border-rose-500/20">
+            Société Générale Retail Solution
           </span>
         </h2>
         <p className="text-xs text-slate-400 mt-1">
-          Complete topology of autonomous specialist agents orchestrating natural language intelligence across 20,000 banking customers.
+          Query-aware multi-agent architecture separating offline model training from online real-time natural language query routing.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {agents.map((agent, i) => (
-          <div key={i} className="rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-2 hover:border-slate-700 transition-all">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-bold text-rose-400">{agent.name}</span>
-              <span className="rounded bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-300">Agent #{i + 1}</span>
-            </div>
-            <h3 className="font-bold text-white text-sm">{agent.role}</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">{agent.desc}</p>
+      {/* Two Flows Visual Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        {/* Flow 1 Card */}
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <span className="rounded bg-rose-500/10 px-2.5 py-1 text-xs font-mono font-bold text-rose-400 border border-rose-500/20">
+              FLOW 1
+            </span>
+            <span className="text-xs text-slate-500">Offline / Admin Pipeline</span>
           </div>
-        ))}
+          <h3 className="text-lg font-bold text-white">Model Training Pipeline</h3>
+          <p className="text-xs text-slate-400">
+            Executed once when source data is updated. Collapses multi-transaction profiles into 1 customer feature vector and trains K-Means clustering.
+          </p>
+
+          <div className="space-y-2 text-xs font-mono text-slate-300">
+            <div className="flex items-center space-x-2 rounded-lg bg-slate-950 p-2.5 border border-slate-800">
+              <span className="text-rose-400">1. Data Agent</span>
+              <span className="text-slate-500">→ Ingests & profiles dataset</span>
+            </div>
+            <div className="flex items-center space-x-2 rounded-lg bg-slate-950 p-2.5 border border-slate-800">
+              <span className="text-rose-400">2. Preprocessing</span>
+              <span className="text-slate-500">→ Cleans nulls & dates</span>
+            </div>
+            <div className="flex items-center space-x-2 rounded-lg bg-slate-950 p-2.5 border border-slate-800">
+              <span className="text-rose-400">3. Feature Store</span>
+              <span className="text-slate-500">→ Computes 23 customer metrics</span>
+            </div>
+            <div className="flex items-center space-x-2 rounded-lg bg-slate-950 p-2.5 border border-slate-800">
+              <span className="text-rose-400">4. Segmentation</span>
+              <span className="text-slate-500">→ Trains 4 K-Means personas</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Flow 2 Card */}
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <span className="rounded bg-emerald-500/10 px-2.5 py-1 text-xs font-mono font-bold text-emerald-400 border border-emerald-500/20">
+              FLOW 2
+            </span>
+            <span className="text-xs text-slate-500">Online / Runtime Pipeline</span>
+          </div>
+          <h3 className="text-lg font-bold text-white">Usecase Serving & Query Router</h3>
+          <p className="text-xs text-slate-400">
+            Executed dynamically for each user query. Supervisor Agent interprets natural language and routes execution to specialist agents.
+          </p>
+
+          <div className="space-y-2 text-xs font-mono text-slate-300">
+            <div className="flex items-center space-x-2 rounded-lg bg-slate-950 p-2.5 border border-slate-800">
+              <span className="text-emerald-400">1. Supervisor Agent</span>
+              <span className="text-slate-500">→ Extracts intent & entities</span>
+            </div>
+            <div className="flex items-center space-x-2 rounded-lg bg-slate-950 p-2.5 border border-slate-800">
+              <span className="text-emerald-400">2. Query Router</span>
+              <span className="text-slate-500">→ Filters feature store rows</span>
+            </div>
+            <div className="flex items-center space-x-2 rounded-lg bg-slate-950 p-2.5 border border-slate-800">
+              <span className="text-emerald-400">3. Recommendation</span>
+              <span className="text-slate-500">→ Generates product offers</span>
+            </div>
+            <div className="flex items-center space-x-2 rounded-lg bg-slate-950 p-2.5 border border-slate-800">
+              <span className="text-emerald-400">4. Explainability</span>
+              <span className="text-slate-500">→ Outputs decision reasons</span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );

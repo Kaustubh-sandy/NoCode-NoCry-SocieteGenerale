@@ -3,87 +3,116 @@
 import React, { useState } from 'react';
 import { TrainResponse } from '../types';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
-
 interface RetrainModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onRetrainSuccess: () => void;
 }
 
-export default function RetrainModal({ isOpen, onClose }: RetrainModalProps) {
+export default function RetrainModal({ isOpen, onClose, onRetrainSuccess }: RetrainModalProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TrainResponse | null>(null);
-  const [clusters, setClusters] = useState(4);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleRetrain = async () => {
+  const handleRunTraining = async () => {
     setLoading(true);
+    setError(null);
+    setResult(null);
+
     try {
-      const res = await fetch(`${API_BASE_URL}/train`, {
+      const res = await fetch('http://127.0.0.1:8000/train', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clusters }),
       });
-      if (!res.ok) throw new Error(`Train failed: ${res.status}`);
+      if (!res.ok) throw new Error(`Training failed with status ${res.status}`);
       const data: TrainResponse = await res.json();
       setResult(data);
-    } catch (err) {
-      console.error('Retrain error:', err);
+      onRetrainSuccess();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to connect to backend server.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl space-y-5">
-        <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            ⚡ Retrain Multi-Agent AI Models
-          </h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-white">✕</button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+      <div className="w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-2xl space-y-4">
+
+        {/* Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="flex items-center space-x-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              ⚡
+            </span>
+            <div>
+              <h3 className="text-base font-bold text-white">Retrain Offline Model Pipeline</h3>
+              <p className="text-xs text-slate-400">Trigger Flow 1: Data Profiling, Feature Store & KMeans</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-white">
+            ✕
+          </button>
         </div>
 
-        <div className="space-y-3 text-xs text-slate-300">
-          <p>
-            Re-runs feature engineering aggregations, StandardScaler normalizations, and K-Means clustering across 20,000 enriched records.
+        {/* Content Body */}
+        {!result && !loading && (
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Clicking <strong className="text-white">Run Retraining</strong> will execute the offline training pipeline (`python model_train.py`) via the backend API. It will profile the raw dataset, update feature store files, and refit the K-Means clustering model.
           </p>
+        )}
 
-          <div className="flex items-center space-x-3 bg-slate-950 p-3 rounded-xl border border-slate-800">
-            <label className="font-semibold text-slate-400">Target Clusters (K):</label>
-            <input
-              type="number"
-              min={2}
-              max={8}
-              value={clusters}
-              onChange={e => setClusters(Number(e.target.value))}
-              className="w-16 rounded bg-slate-900 px-2 py-1 font-mono font-bold text-rose-400 border border-slate-800"
-            />
+        {loading && (
+          <div className="py-8 text-center space-y-3">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-rose-500 border-t-transparent" />
+            <p className="text-xs font-mono text-slate-300 animate-pulse">
+              Running Data Profiling → Feature Store → KMeans Clustering...
+            </p>
           </div>
+        )}
 
-          {result && (
-            <div className="rounded-xl bg-emerald-950/40 p-3 border border-emerald-500/30 text-emerald-300 space-y-1 font-mono text-[11px]">
-              <p className="font-bold text-emerald-400">✓ Retraining Complete!</p>
-              <p>Customers Processed: {result.customers.toLocaleString()}</p>
-              <p>Features Trained: {result.feature_columns.length}</p>
-              <p>Clusters Fitted: {result.clusters}</p>
+        {error && (
+          <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-3 text-xs text-rose-300 font-mono">
+            Error: {error}
+          </div>
+        )}
+
+        {result && (
+          <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-4 space-y-2 text-xs font-mono">
+            <div className="flex items-center space-x-2 text-emerald-400 font-bold">
+              <span>✅</span> <span>Model Retrained Successfully!</span>
             </div>
+            <div className="text-slate-300 space-y-1 pt-1">
+              <div>Source File: <span className="text-white">{result.source}</span></div>
+              <div>Raw Records: <span className="text-white">{result.raw_rows}</span></div>
+              <div>Unique Customers: <span className="text-white">{result.customers}</span></div>
+              <div>Clusters Fitted: <span className="text-white">{result.clusters}</span></div>
+              <div>Trained At: <span className="text-slate-400">{new Date(result.trained_at).toLocaleString()}</span></div>
+            </div>
+          </div>
+        )}
+
+        {/* Footer Actions */}
+        <div className="flex justify-end space-x-3 pt-3 border-t border-slate-800">
+          <button
+            onClick={onClose}
+            className="rounded-lg bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-700"
+          >
+            Close
+          </button>
+          {!result && (
+            <button
+              onClick={handleRunTraining}
+              disabled={loading}
+              className="rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-500 disabled:opacity-50 transition shadow"
+            >
+              {loading ? 'Retraining...' : 'Run Retraining Now'}
+            </button>
           )}
         </div>
 
-        <div className="flex justify-end space-x-3 pt-3 border-t border-slate-800">
-          <button onClick={onClose} className="rounded-lg bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-700">
-            Close
-          </button>
-          <button
-            onClick={handleRetrain}
-            disabled={loading}
-            className="rounded-lg bg-gradient-to-r from-rose-600 to-rose-700 px-5 py-2 text-xs font-semibold text-white hover:from-rose-500 hover:to-rose-600 disabled:opacity-50"
-          >
-            {loading ? 'Retraining Models...' : 'Start Retraining'}
-          </button>
-        </div>
       </div>
     </div>
   );

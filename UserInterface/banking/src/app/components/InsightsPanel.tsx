@@ -1,125 +1,234 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { InsightsResponse, Insight, DataQualityResponse } from '../types';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+// --- SVG Icons ---
+const SparklesIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+  </svg>
+);
 
-export function DataQualityBadge() {
-  const [qualityData, setQualityData] = useState<DataQualityResponse | null>(null);
+const AlertTriangleIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+  </svg>
+);
 
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/data-quality`)
-      .then(res => res.ok ? res.json() : null)
-      .then(d => setQualityData(d))
-      .catch(() => setQualityData(null));
-  }, []);
+const InfoIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
 
-  if (!qualityData?.summary) return null;
+const CheckCircleIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
 
-  const score = qualityData.summary.data_health_score_pct ?? 98.7;
+const ShieldCheckIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+  </svg>
+);
 
-  return (
-    <div className="flex items-center space-x-2 rounded-xl bg-slate-900 px-3 py-1.5 border border-slate-800 shadow">
-      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500/10 text-cyan-400 font-mono text-xs font-bold border border-cyan-500/20">
-        ✓
-      </div>
-      <div>
-        <div className="text-[10px] uppercase font-bold text-slate-400">Data Quality Health</div>
-        <div className="font-mono text-xs font-bold text-cyan-300">{score}% Verified Clean</div>
-      </div>
-    </div>
-  );
+const ActivityIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+  </svg>
+);
+
+const AlertCircleIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+// --- Interfaces ---
+
+interface Insight {
+  priority: 'high' | 'medium' | 'low';
+  insight: string;
 }
 
-export function InsightsPanel() {
-  const [data, setData] = useState<InsightsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+interface InsightsResponse {
+  insights: Insight[];
+}
+
+interface DataQualityResponse {
+  summary: {
+    data_health_score_pct: number;
+    total_transaction_records: number;
+  };
+}
+
+// --- Data Quality Badge Component ---
+
+export const DataQualityBadge = () => {
+  const [healthScore, setHealthScore] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/insights`)
-      .then(res => res.ok ? res.json() : null)
-      .then(d => {
-        setData(d);
+    const fetchQuality = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/data-quality');
+        if (!response.ok) throw new Error('Failed to fetch data quality');
+        const data: DataQualityResponse = await response.json();
+        setHealthScore(data.summary.data_health_score_pct);
+      } catch (err) {
+        console.error(err);
+        setError(true);
+      } finally {
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      }
+    };
+    fetchQuality();
   }, []);
 
-  const getPriorityBadge = (priority: 'high' | 'medium' | 'low') => {
+  if (error) return null;
+
+  return (
+    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-xs font-semibold backdrop-blur-sm shadow-sm transition-all hover:bg-slate-800">
+      <ShieldCheckIcon className="w-4 h-4 text-emerald-400" />
+      <span className="text-slate-300 tracking-wide uppercase">
+        {loading ? (
+          <span className="inline-block w-8 h-3 bg-slate-700 animate-pulse rounded align-middle" />
+        ) : (
+          `${healthScore?.toFixed(1)}%`
+        )}
+        <span className="ml-1 text-slate-500 font-medium">Data Health</span>
+      </span>
+    </div>
+  );
+};
+
+// --- Insights Panel Component ---
+
+export const InsightsPanel = () => {
+  const [insights, setInsights] = useState<Insight[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchInsights = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/insights');
+        if (!response.ok) throw new Error('Failed to fetch insights');
+        const data: InsightsResponse = await response.json();
+        setInsights(data.insights || []);
+      } catch (err) {
+        console.error(err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchInsights();
+  }, []);
+
+  const getPriorityStyles = (priority: string) => {
     switch (priority) {
       case 'high':
-        return (
-          <span className="flex items-center gap-1 rounded border border-rose-500/30 bg-rose-500/15 px-2 py-0.5 text-[10px] font-bold uppercase text-rose-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-rose-400 animate-ping" />
-            High Priority
-          </span>
-        );
+        return {
+          cardBorder: 'border-l-rose-500',
+          badgeBg: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+          icon: <AlertTriangleIcon className="w-5 h-5 text-rose-500" />,
+          dot: 'bg-rose-500 animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.6)]'
+        };
       case 'medium':
-        return (
-          <span className="rounded border border-amber-500/30 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-400">
-            Medium Priority
-          </span>
-        );
+        return {
+          cardBorder: 'border-l-amber-500',
+          badgeBg: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+          icon: <InfoIcon className="w-5 h-5 text-amber-500" />,
+          dot: 'bg-amber-500'
+        };
+      case 'low':
+        return {
+          cardBorder: 'border-l-emerald-500',
+          badgeBg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+          icon: <CheckCircleIcon className="w-5 h-5 text-emerald-500" />,
+          dot: 'bg-emerald-500'
+        };
       default:
-        return (
-          <span className="rounded border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-400">
-            Low Priority
-          </span>
-        );
+        return {
+          cardBorder: 'border-l-slate-500',
+          badgeBg: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+          icon: <ActivityIcon className="w-5 h-5 text-slate-500" />,
+          dot: 'bg-slate-500'
+        };
     }
   };
-
-  const getBorderColor = (priority: 'high' | 'medium' | 'low') => {
-    switch (priority) {
-      case 'high': return 'border-l-rose-500';
-      case 'medium': return 'border-l-amber-500';
-      default: return 'border-l-emerald-500';
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 space-y-3 animate-pulse">
-        <div className="h-5 w-40 rounded bg-slate-800" />
-        <div className="h-16 rounded bg-slate-800" />
-      </div>
-    );
-  }
-
-  const insightsList: Insight[] = data?.insights || [
-    { priority: 'high', insight: '18.5% of customers have elevated dormancy scores above 70 — retention campaign recommended.' },
-    { priority: 'medium', insight: '45.2% of customers have 1 or fewer banking products — significant cross-sell opportunity.' },
-    { priority: 'low', insight: 'Premium Investors segment shows 85.5 average premium potential score across portfolio.' }
-  ];
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl backdrop-blur-xl space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
-        <div className="flex items-center space-x-2">
-          <span className="text-xl">💡</span>
-          <div>
-            <h3 className="text-base font-bold text-white tracking-wide">AI Portfolio Strategic Insights</h3>
-            <p className="text-xs text-slate-400">Automated multi-agent portfolio analysis and anomaly detection</p>
+    <div className="w-full flex flex-col gap-4 rounded-xl bg-[#0b0f19] p-6 border border-slate-800/60 shadow-xl relative overflow-hidden">
+      {/* Decorative gradient blur background */}
+      <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+      
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
+            <SparklesIcon className="w-5 h-5 text-indigo-400" />
           </div>
+          <h2 className="text-lg font-semibold text-slate-100 tracking-wide uppercase flex items-center gap-2">
+            AI Portfolio Insights
+          </h2>
         </div>
-        <DataQualityBadge />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {insightsList.map((item, i) => (
-          <div
-            key={i}
-            className={`rounded-xl border border-slate-800/80 border-l-4 ${getBorderColor(item.priority)} bg-slate-950/70 p-4 space-y-2 hover:border-slate-700 transition-all duration-200`}
-          >
-            <div className="flex justify-between items-center">
-              {getPriorityBadge(item.priority)}
-              <span className="text-[10px] font-mono text-slate-500">Insight #{i + 1}</span>
+      <div className="flex flex-col gap-3 z-10">
+        {loading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex gap-4 p-5 rounded-lg bg-slate-900/50 border border-slate-800 animate-pulse">
+              <div className="w-10 h-10 rounded-full bg-slate-800 shrink-0" />
+              <div className="flex-1 space-y-3 py-1">
+                <div className="h-4 bg-slate-800 rounded w-1/4" />
+                <div className="h-3 bg-slate-800 rounded w-3/4" />
+                <div className="h-3 bg-slate-800 rounded w-1/2" />
+              </div>
             </div>
-            <p className="text-xs text-slate-200 leading-relaxed font-medium">{item.insight}</p>
+          ))
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-900/50 rounded-lg border border-slate-800 border-dashed">
+            <AlertCircleIcon className="w-8 h-8 text-rose-500 mb-3 opacity-80" />
+            <p className="text-slate-300 font-medium">Unable to load insights</p>
+            <p className="text-slate-500 text-sm mt-1">Please try refreshing the page or check connection.</p>
           </div>
-        ))}
+        ) : insights.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-900/50 rounded-lg border border-slate-800 border-dashed">
+            <ActivityIcon className="w-8 h-8 text-indigo-400 mb-3 opacity-80" />
+            <p className="text-slate-300 font-medium">No insights available</p>
+            <p className="text-slate-500 text-sm mt-1">AI model has not generated any new insights for this portfolio.</p>
+          </div>
+        ) : (
+          insights.map((item, idx) => {
+            const styles = getPriorityStyles(item.priority);
+            return (
+              <div 
+                key={idx} 
+                className={`group relative flex items-start gap-4 p-5 rounded-lg bg-slate-900/80 backdrop-blur-md border border-slate-800 border-l-4 ${styles.cardBorder} hover:bg-slate-800/80 transition-all duration-300 shadow-sm hover:shadow-md`}
+              >
+                <div className="mt-0.5 flex-shrink-0 p-2 rounded-full bg-slate-950 border border-slate-800 group-hover:scale-110 transition-transform duration-300">
+                  {styles.icon}
+                </div>
+                
+                <div className="flex-1 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border ${styles.badgeBg}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
+                      {item.priority} Priority
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-300 leading-relaxed font-medium">
+                    {item.insight}
+                  </p>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
-}
+};

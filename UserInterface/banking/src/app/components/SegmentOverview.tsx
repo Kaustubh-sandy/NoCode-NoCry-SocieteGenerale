@@ -1,163 +1,203 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { SegmentsResponse, SegmentInfo } from '../types';
+import React, { useEffect, useState } from 'react';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+// Types
+interface Segment {
+  segment_label: string;
+  count: number;
+  percentage: number;
+  avg_income: number;
+  avg_net_worth: number;
+  avg_credit_score: number;
+  avg_premium_potential: number;
+  avg_tx_count: number;
+  avg_total_spend: number;
+}
+
+interface SegmentResponse {
+  total_customers: number;
+  segments: Segment[];
+}
 
 export default function SegmentOverview() {
-  const [data, setData] = useState<SegmentsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<SegmentResponse | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/segments`)
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then(d => {
-        setData(d);
+    const fetchSegments = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch('http://127.0.0.1:8000/segments');
+        if (!res.ok) {
+          throw new Error('Failed to fetch segment data');
+        }
+        const json = await res.json();
+        setData(json);
+      } catch (err: any) {
+        setError(err.message || 'An error occurred');
+      } finally {
         setLoading(false);
-      })
-      .catch(err => {
-        console.error('Segments fetch error:', err);
-        setError('Unable to load segment distribution. Ensure backend API is online.');
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchSegments();
   }, []);
 
-  const fmt = (val: number) => {
-    if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
-    if (val >= 100000) return `₹${(val / 100000).toFixed(2)} L`;
-    if (val >= 1000) return `₹${(val / 1000).toFixed(1)}k`;
-    return `₹${Math.round(val).toLocaleString('en-IN')}`;
+  // Indian currency formatter
+  const formatCurrency = (value: number) => {
+    if (value >= 10000000) return `₹${(value / 10000000).toFixed(2)} Cr`;
+    if (value >= 100000) return `₹${(value / 100000).toFixed(2)} L`;
+    if (value >= 1000) return `₹${(value / 1000).toFixed(2)} k`;
+    return `₹${value.toFixed(0)}`;
   };
 
+  // Theme color mapping
   const getSegmentColor = (label: string) => {
-    if (label.includes('Premium')) return { dot: 'bg-emerald-400', bar: 'bg-emerald-500', border: 'border-emerald-500/30', bg: 'from-emerald-950/30' };
-    if (label.includes('Emerging')) return { dot: 'bg-indigo-400', bar: 'bg-indigo-500', border: 'border-indigo-500/30', bg: 'from-indigo-950/30' };
-    if (label.includes('Dormant')) return { dot: 'bg-amber-400', bar: 'bg-amber-500', border: 'border-amber-500/30', bg: 'from-amber-950/30' };
-    return { dot: 'bg-slate-400', bar: 'bg-slate-500', border: 'border-slate-700/50', bg: 'from-slate-900/40' };
+    const lower = label.toLowerCase();
+    if (lower.includes('premium')) return 'bg-emerald-500';
+    if (lower.includes('emerging') || lower.includes('affluent')) return 'bg-indigo-400';
+    if (lower.includes('everyday') || lower.includes('banking')) return 'bg-slate-400';
+    if (lower.includes('dormant') || lower.includes('recovery')) return 'bg-amber-400';
+    return 'bg-rose-500'; // fallback
   };
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 animate-pulse space-y-4">
-        <div className="h-6 w-48 rounded bg-slate-800" />
-        <div className="h-10 w-full rounded bg-slate-800" />
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-36 rounded-xl bg-slate-800" />
+      <div className="w-full space-y-6 animate-pulse">
+        {/* Top Bar Skeleton */}
+        <div className="h-24 w-full bg-slate-900/60 border border-slate-800/80 rounded-2xl backdrop-blur-md"></div>
+        {/* Chart Skeleton */}
+        <div className="h-32 w-full bg-slate-900/60 border border-slate-800/80 rounded-2xl backdrop-blur-md"></div>
+        {/* Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-72 w-full bg-slate-900/60 border border-slate-800/80 rounded-2xl backdrop-blur-md"></div>
           ))}
         </div>
       </div>
     );
   }
 
-  if (error || !data) {
+  if (error) {
     return (
-      <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-rose-300 text-xs">
-        ⚠️ {error || 'No segment data available.'}
+      <div className="w-full p-6 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 backdrop-blur-md">
+        <div className="font-semibold mb-1">Failed to load segments</div>
+        <div className="text-sm opacity-80">{error}</div>
       </div>
     );
   }
 
+  if (!data) return null;
+
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl backdrop-blur-xl space-y-6">
-      {/* Title Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
+    <div className="w-full space-y-6 text-slate-200">
+      
+      {/* Top Bar: Total Customers */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between p-6 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-slate-800 shadow-2xl">
         <div>
-          <h2 className="text-lg font-bold text-white tracking-wide flex items-center gap-2">
-            Banking Customer Segment Distribution
-            <span className="rounded bg-rose-500/10 px-2 py-0.5 text-xs font-semibold text-rose-400 border border-rose-500/20">
-              K-Means AI Persona Clustering
-            </span>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+            Total Customer Base
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Total Customer Warehouse Population: <span className="font-mono text-white font-bold">{data.total_customers.toLocaleString()}</span> Accounts
-          </p>
+          <div className="text-4xl font-light text-white tracking-tight">
+            {data.total_customers.toLocaleString('en-IN')}
+          </div>
+        </div>
+        <div className="mt-4 md:mt-0 flex items-center space-x-2 text-sm text-slate-400">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+          </span>
+          <span>Live Data Sync</span>
         </div>
       </div>
 
-      {/* Horizontal Segment Percentage Bar */}
-      <div className="space-y-2">
-        <div className="flex justify-between text-xs font-medium text-slate-400">
-          <span>Cluster Distribution (%)</span>
-          <span>100% Total</span>
-        </div>
-        <div className="flex h-5 w-full overflow-hidden rounded-xl bg-slate-950 p-1 border border-slate-800">
-          {data.segments.map((seg, idx) => {
-            const colors = getSegmentColor(seg.segment_label);
-            return (
-              <div
-                key={idx}
-                className={`h-full ${colors.bar} transition-all duration-300 first:rounded-l-lg last:rounded-r-lg hover:opacity-90`}
-                style={{ width: `${seg.percentage}%` }}
-                title={`${seg.segment_label}: ${seg.percentage}% (${seg.count} customers)`}
-              />
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 4 Segment Persona Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {data.segments.map((seg, idx) => {
-          const colors = getSegmentColor(seg.segment_label);
-          return (
+      {/* Distribution Chart */}
+      <div className="p-6 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-slate-800 shadow-2xl space-y-5">
+        <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+          Portfolio Distribution
+        </h3>
+        
+        {/* Stacked Bar */}
+        <div className="h-3 w-full flex rounded-full overflow-hidden bg-slate-950 shadow-inner">
+          {data.segments.map((s) => (
             <div
-              key={idx}
-              className={`rounded-xl border ${colors.border} bg-gradient-to-b ${colors.bg} to-slate-950 p-4 space-y-3 shadow-lg hover:border-slate-700 transition-all duration-200`}
-            >
-              {/* Card Header */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className={`h-2.5 w-2.5 rounded-full ${colors.dot}`} />
-                  <h3 className="font-bold text-white text-sm tracking-wide">{seg.segment_label}</h3>
-                </div>
-                <span className="font-mono text-xs font-bold text-slate-400">{seg.percentage}%</span>
-              </div>
-
-              {/* Count */}
-              <div className="text-xl font-bold font-mono text-white">
-                {seg.count.toLocaleString()} <span className="text-xs font-normal text-slate-500">customers</span>
-              </div>
-
-              {/* Sub-Metrics Grid */}
-              <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-slate-800/80">
-                <div>
-                  <span className="text-slate-500 block">Avg Income</span>
-                  <span className="font-mono font-semibold text-rose-400">{fmt(seg.avg_income)}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block">Avg Net Worth</span>
-                  <span className="font-mono font-semibold text-emerald-400">{fmt(seg.avg_net_worth)}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block">Avg Credit Score</span>
-                  <span className="font-mono font-semibold text-indigo-400">{seg.avg_credit_score}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block">Avg Monthly Spend</span>
-                  <span className="font-mono font-semibold text-amber-400">{fmt(seg.avg_total_spend)}</span>
-                </div>
-              </div>
-
-              {/* Premium Potential Bar */}
-              <div className="space-y-1 pt-1">
-                <div className="flex justify-between text-[10px] font-semibold text-slate-400">
-                  <span>Premium Potential Score</span>
-                  <span className="font-mono text-white">{seg.avg_premium_potential}/100</span>
-                </div>
-                <div className="h-1.5 w-full rounded-full bg-slate-900 overflow-hidden">
-                  <div className="h-full bg-rose-500 rounded-full" style={{ width: `${Math.min(seg.avg_premium_potential, 100)}%` }} />
-                </div>
-              </div>
-
+              key={s.segment_label}
+              style={{ width: `${s.percentage}%` }}
+              className={`h-full ${getSegmentColor(s.segment_label)} transition-all duration-1000 ease-out hover:opacity-80`}
+              title={`${s.segment_label}: ${s.percentage.toFixed(1)}%`}
+            />
+          ))}
+        </div>
+        
+        {/* Legend */}
+        <div className="flex flex-wrap gap-x-6 gap-y-3 pt-1">
+          {data.segments.map((s) => (
+            <div key={s.segment_label} className="flex items-center text-xs text-slate-300">
+              <span className={`w-2 h-2 rounded-full mr-2 shadow-sm ${getSegmentColor(s.segment_label)}`}></span>
+              <span className="font-medium">{s.segment_label}</span>
+              <span className="ml-1.5 text-slate-500 font-mono">{s.percentage.toFixed(1)}%</span>
             </div>
-          );
-        })}
+          ))}
+        </div>
+      </div>
+
+      {/* Segment Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {data.segments.map((s) => (
+          <div
+            key={s.segment_label}
+            className="flex flex-col justify-between p-6 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-slate-800 hover:border-slate-700 hover:bg-slate-800/50 transition-all duration-300 shadow-xl group relative overflow-hidden"
+          >
+            {/* Subtle top gradient accent */}
+            <div className={`absolute top-0 left-0 w-full h-1 opacity-50 ${getSegmentColor(s.segment_label)}`} />
+            
+            {/* Card Header */}
+            <div className="flex justify-between items-start mb-6">
+              <div className="flex items-center space-x-2">
+                <div className={`w-2 h-2 rounded-full ${getSegmentColor(s.segment_label)} shadow-[0_0_8px_rgba(0,0,0,0.5)] shadow-${getSegmentColor(s.segment_label).split('-')[1]}-500/50`}></div>
+                <h4 className="font-semibold text-slate-100 tracking-wide text-sm">{s.segment_label}</h4>
+              </div>
+              <div className="text-right">
+                <div className="text-xl font-medium text-white">{s.count.toLocaleString('en-IN')}</div>
+                <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-0.5">{s.percentage.toFixed(1)}% Base</div>
+              </div>
+            </div>
+
+            {/* Metrics */}
+            <div className="space-y-4 mb-6 flex-1">
+              <div className="flex justify-between items-end border-b border-slate-800/50 pb-2">
+                <span className="text-xs text-slate-400">Avg Income</span>
+                <span className="font-mono text-sm text-slate-200">{formatCurrency(s.avg_income)}</span>
+              </div>
+              <div className="flex justify-between items-end border-b border-slate-800/50 pb-2">
+                <span className="text-xs text-slate-400">Net Worth</span>
+                <span className="font-mono text-sm text-slate-200">{formatCurrency(s.avg_net_worth)}</span>
+              </div>
+              <div className="flex justify-between items-end border-b border-slate-800/50 pb-2">
+                <span className="text-xs text-slate-400">Credit Score</span>
+                <span className={`font-mono text-sm ${s.avg_credit_score >= 750 ? 'text-emerald-400' : s.avg_credit_score >= 650 ? 'text-amber-400' : 'text-slate-300'}`}>
+                  {Math.round(s.avg_credit_score)}
+                </span>
+              </div>
+            </div>
+
+            {/* Premium Potential Progress Bar */}
+            <div className="pt-2">
+              <div className="flex justify-between items-center text-[11px] mb-2">
+                <span className="text-slate-400 uppercase tracking-wider font-semibold">Premium Potential</span>
+                <span className="text-slate-200 font-mono">{s.avg_premium_potential.toFixed(1)}%</span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden shadow-inner">
+                <div
+                  className={`h-full ${getSegmentColor(s.segment_label)} opacity-75 group-hover:opacity-100 transition-all duration-500`}
+                  style={{ width: `${s.avg_premium_potential}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

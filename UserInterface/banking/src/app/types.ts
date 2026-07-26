@@ -84,7 +84,16 @@ export interface AnalysisResult {
   by_segment?: Record<string, Record<string, number>>;
 }
 
-/* ─── Audit Trail & Output Types ─── */
+/* ─── Gemini & Raw Output Types ─── */
+
+export interface GeminiOutput {
+  status: string;
+  api_key_status: string;
+  executive_summary: string;
+  key_insights: string[];
+  recommended_actions: string[];
+  natural_language_response: string;
+}
 
 export interface AuditStep {
   step: number;
@@ -112,6 +121,7 @@ export interface QueryResponse {
   results?: CustomerRecord[];
   result?: AnalysisResult;
   raw_output?: RawOutput;
+  gemini_output?: GeminiOutput;
   audit_trail?: AuditStep[];
 }
 
@@ -190,6 +200,8 @@ export interface ModelStatusResponse {
   };
 }
 
+/* ─── EDA Types ─── */
+
 export interface EDASummaryResponse {
   metric: string;
   statistics: Statistics;
@@ -198,7 +210,9 @@ export interface EDASummaryResponse {
 export interface EDACompareResponse {
   metric: string;
   group_by: string;
-  comparison: Record<string, { count: number; mean: number; median?: number; std?: number; min?: number; max?: number }>;
+  comparison: Record<string, Record<string, number>>;
 }
+
+/* ─── Tab Types ─── */
 
 export type TabId = 'overview' | 'customers' | 'browse' | 'analytics' | 'architecture';

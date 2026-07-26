@@ -15,6 +15,7 @@ export default function AgentAuditTrail({ auditTrail, plan, query, rawOutput }: 
 
   if (!auditTrail || auditTrail.length === 0) {
     if (!plan) return null;
+    // Fallback step generation if backend did not return explicit audit_trail
     const defaultSteps: AuditStep[] = [
       {
         step: 1,
@@ -68,7 +69,7 @@ function getAgentWhyCalled(agent: string, intent: string): string {
     case 'visualization_agent': return 'Groups metric distributions by customer segment for chart rendering.';
     case 'insights_agent': return 'Scans portfolio dataset for cross-sell gaps and dormancy risks.';
     case 'data_agent': return 'Inspects dataset health score, missing values, and memory footprint.';
-    case 'preprocessing_agent': return 'Audits data cleanliness and duplicate rows.';
+    case 'preprocessing_agent': return 'Audits data cleanlines and duplicate rows.';
     case 'human_loop_agent': return 'Evaluates financial exposure against bank risk governance policy.';
     default: return `Invoked to execute ${agent} specialized logic.`;
   }
@@ -143,7 +144,7 @@ function renderAuditTrailUI(
 
       {/* Audit Steps Timeline */}
       <div className="mt-5 space-y-4">
-        {steps.map((stepItem) => {
+        {steps.map((stepItem, idx) => {
           const isExpanded = expandedStep === stepItem.step;
           return (
             <div
