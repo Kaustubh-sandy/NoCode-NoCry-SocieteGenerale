@@ -56,10 +56,10 @@ export default function Navbar({
             </div>
             <div>
               <p className="text-sm font-bold text-gray-900 leading-tight tracking-tight">
-                Société Générale
+                Bank360 AI
               </p>
               <p className="text-xs text-[#E9041E] font-semibold leading-tight">
-                Bank360 AI
+                Retail Banking
               </p>
             </div>
           </div>

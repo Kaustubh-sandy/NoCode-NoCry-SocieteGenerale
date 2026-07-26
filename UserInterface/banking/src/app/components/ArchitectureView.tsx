@@ -11,7 +11,7 @@ export default function ArchitectureView() {
         <h2 className="text-xl font-bold text-white flex items-center space-x-2">
           <span>🧠 Bank360 AI Architecture & Multi-Agent Flow</span>
           <span className="rounded-full bg-rose-500/10 px-2.5 py-0.5 text-xs text-rose-400 font-mono border border-rose-500/20">
-            Société Générale Retail Solution
+            Retail Solution
           </span>
         </h2>
         <p className="text-xs text-slate-400 mt-1">

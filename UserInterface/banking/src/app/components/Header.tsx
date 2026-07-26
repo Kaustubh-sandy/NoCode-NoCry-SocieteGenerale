@@ -52,7 +52,7 @@ export default function Header({ apiStatus, activeTab, setActiveTab, onOpenRetra
                 BANK<span className="text-rose-500">360</span>
               </span>
               <span className="badge bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px]">
-                Société Générale
+                Retail Solution
               </span>
             </div>
             <p className="text-[11px] text-slate-500 font-medium">

@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bank360 AI — Société Générale Retail Analytics & Personalization",
-  description: "Query-aware multi-agent AI customer segmentation, recommendation, and explainability dashboard for Société Générale Retail Banking.",
+  title: "Bank360 AI — Retail Analytics & Personalization",
+  description: "Query-aware multi-agent AI customer segmentation, recommendation, and explainability dashboard for Retail Banking.",
 };
 
 export default function RootLayout({
