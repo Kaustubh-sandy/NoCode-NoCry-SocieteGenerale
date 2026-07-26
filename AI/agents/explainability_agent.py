@@ -10,10 +10,11 @@ def _get(obj, key, default=0):
         except (KeyError, TypeError):
             return default
 
-def explain(customer, outcome="premium opportunity"):
+def explain(customer, outcome="segment assignment"):
     """
     Produces transparent, human-readable reason codes and summary explanations
-    incorporating time-series transaction aggregations and financial strength metrics.
+    incorporating time-series transaction aggregations, financial strength metrics,
+    and churn / dormancy indicators.
     """
     income = float(_get(customer, "yearly_income", 0))
     net_worth = float(_get(customer, "net_worth_estimate", 0))
@@ -21,6 +22,11 @@ def explain(customer, outcome="premium opportunity"):
     premium = float(_get(customer, "premium_potential", 0))
     inv_read = float(_get(customer, "investment_readiness", 0))
     activity = float(_get(customer, "activity_score", 0))
+    dormancy = float(_get(customer, "dormancy_score", 0))
+    churn_risk = float(_get(customer, "churn_risk", dormancy))
+    digital = float(_get(customer, "digital_adoption_score", 0))
+    last_login = int(_get(customer, "last_login_days", 0))
+    products = int(_get(customer, "total_products", 1))
     total_tx = float(_get(customer, "total_transaction_count", 0))
     total_spend = float(_get(customer, "total_historical_spend", 0))
     avg_tx = float(_get(customer, "avg_transaction_amount", 0))
@@ -32,13 +38,34 @@ def explain(customer, outcome="premium opportunity"):
         "premium_potential": premium,
         "investment_readiness": inv_read,
         "activity_score": activity,
+        "dormancy_score": dormancy,
+        "churn_risk": churn_risk,
         "total_historical_spend": total_spend,
         "total_transaction_count": total_tx,
         "avg_transaction_amount": avg_tx
     }
     
     sorted_factors = sorted(factors.items(), key=lambda item: item[1], reverse=True)
-    summary = f"Supported by a premium-potential score of {premium:.1f}, credit score of {credit:.0f}, estimated net worth of ₹{net_worth:,.0f}, and historical spend of ₹{total_spend:,.0f} across {int(total_tx)} transactions."
+
+    # Churn / Retention specific explanation
+    if outcome in {"churn risk", "retention risk", "dormancy risk"} or churn_risk >= 50 or dormancy >= 50:
+        summary = (
+            f"Elevated churn & dormancy risk ({max(churn_risk, dormancy):.1f}/100) "
+            f"driven by {last_login} days since last login, low digital activity score ({activity:.1f}/100), "
+            f"and limited product adoption ({products} active product{'s' if products != 1 else ''})."
+        )
+    # Premium opportunity specific explanation
+    elif outcome == "premium opportunity" or premium >= 70:
+        summary = (
+            f"High premium potential ({premium:.1f}/100) supported by credit score of {credit:.0f}, "
+            f"estimated net worth of ₹{net_worth:,.0f}, and historical spend of ₹{total_spend:,.0f} across {int(total_tx)} transactions."
+        )
+    # General segment assignment explanation
+    else:
+        summary = (
+            f"Segment assignment backed by financial health profile, income of ₹{income:,.0f}, "
+            f"credit score of {credit:.0f}, activity score of {activity:.1f}/100, and {products} active product(s)."
+        )
     
     return {
         "outcome": outcome,
