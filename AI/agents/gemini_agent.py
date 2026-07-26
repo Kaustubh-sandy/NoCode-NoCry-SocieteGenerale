@@ -12,7 +12,7 @@ def call_gemini_api(prompt: str) -> str:
     api_key = os.getenv("GEMINI_API_KEY", GEMINI_API_KEY)
     
     # Check if key is placeholder
-    if not api_key or api_key == "ur api key here":
+    if not api_key or api_key == "api here":
         return None
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
