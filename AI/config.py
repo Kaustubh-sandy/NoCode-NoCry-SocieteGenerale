@@ -14,6 +14,10 @@ PERSONAS_FILE = FEATURE_STORE / "segment_personas.json"
 MODEL_FILE = MODELS_DIR / "customer_segmentation_kmeans.pkl"
 SCALER_FILE = MODELS_DIR / "customer_segmentation_scaler.pkl"
 
+# ── Gemini API Configuration ──────────────────────────────────────────────────
+# Replace 'api key here' below with your actual Gemini API Key
+# Or set the environment variable GEMINI_API_KEY in your system/terminal.
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "api key here")
 # Enterprise Governance & Policy Configuration (Configurable by Risk & Product Teams)
 GOVERNANCE_POLICY = {
     "max_auto_campaign_target_count": 1000,
