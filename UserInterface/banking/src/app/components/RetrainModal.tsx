@@ -6,7 +6,7 @@ import { TrainResponse } from '../types';
 interface RetrainModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onRetrainSuccess: () => void;
+  onRetrainSuccess?: () => void;
 }
 
 export default function RetrainModal({ isOpen, onClose, onRetrainSuccess }: RetrainModalProps) {
@@ -29,7 +29,7 @@ export default function RetrainModal({ isOpen, onClose, onRetrainSuccess }: Retr
       if (!res.ok) throw new Error(`Training failed with status ${res.status}`);
       const data: TrainResponse = await res.json();
       setResult(data);
-      onRetrainSuccess();
+      onRetrainSuccess?.();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to connect to backend server.');
     } finally {

@@ -1,31 +1,5 @@
 'use client';
-'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import Header from './components/Header';
-import SupervisorPlannerCard from './components/SupervisorPlannerCard';
-import CustomerTable from './components/CustomerTable';
-import CustomerDetailDrawer from './components/CustomerDetailDrawer';
-import ArchitectureView from './components/ArchitectureView';
-import RetrainModal from './components/RetrainModal';
-import SegmentOverview from './components/SegmentOverview';
-import { InsightsPanel } from './components/InsightsPanel';
-import EDAExplorer from './components/EDAExplorer';
-import CustomerBrowser from './components/CustomerBrowser';
-import AgentAuditTrail from './components/AgentAuditTrail';
-import { QueryResponse, CustomerRecord, TabId } from './types';
-
-const API_BASE_URL = 'http://127.0.0.1:8000';
-
-const PRESET_QUERIES = [
-  { label: '⚠️ Churn & Attrition', query: 'Which customers are about to leave and why' },
-  { label: '🎯 Premium Prospects', query: 'Which customers can become premium?' },
-  { label: '★ Premium Bangalore', query: 'Find premium customers in Bangalore' },
-  { label: '📊 Income EDA Stats', query: 'Show income distribution statistics' },
-  { label: '💡 Portfolio Insights', query: 'Show portfolio cross sell opportunities' },
-  { label: '🛡️ Data Health Audit', query: 'Run data health quality check' },
-  { label: '⚖️ Governance Policy', query: 'Check risk governance approval policy for net worth 50 lakh' },
-];
 import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import SupervisorPlannerCard from './components/SupervisorPlannerCard';
@@ -85,7 +59,7 @@ export default function Home() {
       setQueryResponse(data);
       setApiStatus('online');
 
-      if (data.plan?.intent === 'analysis') {
+      if (data.plan?.intent === 'eda_analysis') {
         setActiveTab('analytics');
       } else {
         setActiveTab('customers');
@@ -131,7 +105,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col pb-16">
+    <div className="min-h-screen flex flex-col pb-16 bg-slate-950 text-slate-100 font-sans">
 
       <Header
         apiStatus={apiStatus}
@@ -142,7 +116,7 @@ export default function Home() {
 
       {/* Offline Banner */}
       {apiStatus === 'offline' && (
-        <div className="bg-rose-500/8 border-b border-rose-500/15 px-4 py-3 text-center text-xs text-rose-300/90 animate-fade-in">
+        <div className="bg-rose-500/10 border-b border-rose-500/20 px-4 py-3 text-center text-xs text-rose-300">
           <strong className="text-white">Backend Offline</strong>
           {' · '}Run <code className="bg-slate-900 px-2 py-0.5 rounded font-mono text-rose-400 text-[11px]">python start_be.py</code> in your AI folder
         </div>
@@ -150,36 +124,29 @@ export default function Home() {
 
       <main className="mx-auto w-full max-w-[1440px] px-5 py-6 space-y-6">
 
-        {/* ═══════════════════════════════════════════════════════ */}
-        {/* TAB: OVERVIEW — Segment Dashboard + Insights           */}
-        {/* ═══════════════════════════════════════════════════════ */}
+        {/* OVERVIEW TAB */}
         {activeTab === 'overview' && (
           <div className="space-y-6 animate-fade-in">
-            {/* Segment Distribution Dashboard */}
             <SegmentOverview />
-
-            {/* AI Insights Panel */}
             <InsightsPanel />
           </div>
         )}
 
-        {/* ═══════════════════════════════════════════════════════ */}
-        {/* TAB: AI QUERY — Search + Results + Table               */}
-        {/* ═══════════════════════════════════════════════════════ */}
+        {/* AI QUERY TAB */}
         {activeTab === 'customers' && (
           <div className="space-y-6 animate-fade-in">
 
-            {/* Search Bar */}
-            <div className="glass-card rounded-2xl p-6">
+            {/* Search Input Bar */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl backdrop-blur-xl">
               <div className="mb-4">
                 <h1 className="text-xl font-bold text-white flex items-center gap-2">
                   Ask Bank360 AI
-                  <span className="badge bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px]">
-                    Multi-Agent & Gemini LLM
+                  <span className="rounded bg-rose-500/10 px-2 py-0.5 text-xs font-semibold text-rose-400 border border-rose-500/20">
+                    13 Specialist Agents Engine
                   </span>
                 </h1>
-                <p className="text-xs text-slate-500 mt-1">
-                  Natural language queries for customer segments, prospecting, EDA distributions, and product recommendations.
+                <p className="text-xs text-slate-400 mt-1">
+                  Natural language queries for customer churn, prospecting, EDA distributions, and next-best-action offers.
                 </p>
               </div>
 
@@ -190,8 +157,8 @@ export default function Home() {
                     type="text"
                     value={queryInput}
                     onChange={e => setQueryInput(e.target.value)}
-                    placeholder="e.g. Find premium customers in Mumbai or Which customers are about to leave and why"
-                    className="w-full rounded-xl bg-slate-950/80 px-4 py-3.5 pl-11 pr-28 text-sm text-white placeholder-slate-600 border border-slate-800/60 shadow-inner focus:border-rose-500/50 focus:outline-none focus:ring-1 focus:ring-rose-500/30 transition-all"
+                    placeholder="e.g. Which customers are about to leave and why or Find premium customers in Bangalore"
+                    className="w-full rounded-xl bg-slate-950 px-4 py-3.5 pl-11 pr-28 text-sm text-white placeholder-slate-600 border border-slate-800 focus:border-rose-500/50 focus:outline-none focus:ring-1 focus:ring-rose-500/30 transition-all"
                   />
                   <svg className="absolute left-3.5 top-4 h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -212,14 +179,14 @@ export default function Home() {
                 </button>
               </form>
 
-              {/* Quick Presets */}
+              {/* Presets */}
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Presets:</span>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Presets:</span>
                 {PRESET_QUERIES.map((p, i) => (
                   <button
                     key={i}
                     onClick={() => handlePresetClick(p.query)}
-                    className="rounded-lg bg-slate-800/50 px-2.5 py-1 text-[11px] font-medium text-slate-400 hover:bg-slate-700/60 hover:text-slate-200 border border-slate-700/40 transition-all duration-200"
+                    className="rounded-lg bg-slate-950 px-2.5 py-1 text-[11px] font-medium text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-800 transition-all duration-150"
                   >
                     {p.label}
                   </button>
@@ -227,7 +194,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Supervisor Plan */}
+            {/* Supervisor Execution Plan */}
             <SupervisorPlannerCard plan={queryResponse?.plan || null} query={queryInput} />
 
             {/* Multi-Agent Process Execution Audit Trail */}
@@ -256,7 +223,7 @@ export default function Home() {
               </div>
             )}
 
-            {/* Customer Table */}
+            {/* Customer Data Table */}
             <CustomerTable
               customers={results}
               onSelectCustomer={c => setSelectedCustomer(c)}
@@ -266,27 +233,21 @@ export default function Home() {
           </div>
         )}
 
-        {/* ═══════════════════════════════════════════════════════ */}
-        {/* TAB: BROWSE ALL — Paginated Customer Browser           */}
-        {/* ═══════════════════════════════════════════════════════ */}
+        {/* BROWSE ALL TAB */}
         {activeTab === 'browse' && (
           <div className="animate-fade-in">
             <CustomerBrowser onSelectCustomer={c => setSelectedCustomer(c)} />
           </div>
         )}
 
-        {/* ═══════════════════════════════════════════════════════ */}
-        {/* TAB: ANALYTICS — EDA Explorer                          */}
-        {/* ═══════════════════════════════════════════════════════ */}
+        {/* ANALYTICS TAB */}
         {activeTab === 'analytics' && (
           <div className="animate-fade-in">
             <EDAExplorer analysis={queryResponse?.result || null} />
           </div>
         )}
 
-        {/* ═══════════════════════════════════════════════════════ */}
-        {/* TAB: ARCHITECTURE                                       */}
-        {/* ═══════════════════════════════════════════════════════ */}
+        {/* ARCHITECTURE TAB */}
         {activeTab === 'architecture' && (
           <div className="animate-fade-in">
             <ArchitectureView />
@@ -295,16 +256,19 @@ export default function Home() {
 
       </main>
 
-      {/* Drawer & Modal */}
+      {/* Customer Detail Slide-Over Drawer */}
       <CustomerDetailDrawer
         customer={selectedCustomer}
         onClose={() => setSelectedCustomer(null)}
       />
+
+      {/* Retrain Model Modal */}
       <RetrainModal
         isOpen={isRetrainOpen}
         onClose={() => setIsRetrainOpen(false)}
         onRetrainSuccess={() => { checkHealth(); executeQuery(queryInput); }}
       />
+
     </div>
   );
 }
