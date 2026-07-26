@@ -12,7 +12,7 @@ def save_features(features, segments, metadata):
 
 def load_customers():
     if not FEATURES_FILE.exists() and not FEATURES_CSV_FILE.exists():
-        raise FileNotFoundError("Feature store is empty. Run `py app.py train` first.")
+        raise FileNotFoundError("Feature store is empty. Please run Flow 1 first: python model_train.py")
     try:
         features = pd.read_parquet(FEATURES_FILE)
         segments = pd.read_parquet(SEGMENTS_FILE)
