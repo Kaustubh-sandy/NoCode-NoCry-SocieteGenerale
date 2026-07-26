@@ -1,26 +1,109 @@
 @import "tailwindcss";
 
 :root {
+  /* Société Générale Brand Colors */
+  --sg-red: #E9041E;
+  --sg-red-dark: #b80318;
+  --sg-red-light: #ff2d45;
+  --sg-red-subtle: #fff0f1;
+  --sg-black: #1a1a1a;
+  --sg-gray-900: #1f2937;
+  --sg-gray-700: #374151;
+  --sg-gray-500: #6b7280;
+  --sg-gray-300: #d1d5db;
+  --sg-gray-100: #f3f4f6;
+  --sg-gray-50: #f9fafb;
+
+  /* Semantic tokens */
   --background: #ffffff;
-  --foreground: #171717;
+  --surface: #f9fafb;
+  --surface-elevated: #ffffff;
+  --foreground: #1a1a1a;
+  --foreground-secondary: #374151;
+  --foreground-muted: #6b7280;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+
+  /* Status */
+  --success: #059669;
+  --success-bg: #ecfdf5;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --danger: #E9041E;
+  --danger-bg: #fff0f1;
+  --info: #2563eb;
+  --info-bg: #eff6ff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-sg-red: var(--sg-red);
+  --color-sg-red-dark: var(--sg-red-dark);
+  --color-sg-red-light: var(--sg-red-light);
+  --color-sg-red-subtle: var(--sg-red-subtle);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--sg-gray-100);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--sg-gray-300);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--sg-gray-500);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-in  { animation: fadeIn 0.3s ease forwards; }
+.animate-spin-slow { animation: spin 1s linear infinite; }
+
+/* Segment badge colors */
+.badge-premium   { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.badge-dormant   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.badge-emerging  { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+.badge-everyday  { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+
+/* Focus ring */
+*:focus-visible {
+  outline: 2px solid var(--sg-red);
+  outline-offset: 2px;
 }
