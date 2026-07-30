@@ -115,9 +115,10 @@ UserInterface/banking/     Next.js 16 + React 19 + TS + Tailwind v4
 
 ## Tech stack
 
-Python 3.10+ · FastAPI · Uvicorn · scikit-learn · pandas · NumPy · Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · Plotly ·
+Python 3.10+ · FastAPI · Uvicorn · scikit-learn · pandas · NumPy · Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · Plotly  
+
 ---
 
 <div align="center">
-<b>Team NoCode-NoCry</b> 
+<b>Team NoCode-NoCry</b> · Track SF-4
 </div>
