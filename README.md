@@ -5,7 +5,7 @@ Société Générale Hackathon — Track SF-4
 
 Ask a retail-banking question in plain English. A Supervisor Agent parses the intent, invokes **only** the specialist agents that question needs, and returns segments, personas and recommendations — with a full audit trail of which agent ran and why.
 
-📹 **[Demo video](https://www.loom.com/share/4405869054674e8b9ec264742998f4d7)** · 📄 [Technical docs](./PROJECT_PRD_AND_EXECUTION.md)
+📹 **[Demo video](https://www.loom.com/share/4405869054674e8b9ec264742998f4d7)** 
 
 ```
 20,000 transactions → 75 enriched columns → ~4,900 customers → 40 features
