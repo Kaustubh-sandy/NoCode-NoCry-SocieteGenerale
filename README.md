@@ -120,5 +120,5 @@ Python 3.10+ · FastAPI · Uvicorn · scikit-learn · pandas · NumPy · Next.js
 ---
 
 <div align="center">
-<b>Team NoCode-NoCry</b> · Track SF-4
+<b>Team NoCode-NoCry</b> 
 </div>
